@@ -5,7 +5,7 @@ public class UsuarioDTO {
     private String nombre;
     private String password;
 
-    public UsuarioDTO(String nombre, String password1, String password2) {
+    public UsuarioDTO(String nombre, String password1) {
         this.nombre = nombre;
         this.password = password1;
     }

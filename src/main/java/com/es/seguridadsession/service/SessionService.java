@@ -13,7 +13,7 @@ public class SessionService {
     @Autowired
     private SessionRepository sessionRepository;
 
-    public boolean checkToken(String token) {
+    public boolean checkTokenAndRole(String token, String requiredRole) {
 
         // Comprobamos que el token existe y es válido
         Session s = sessionRepository
@@ -24,7 +24,11 @@ public class SessionService {
         // Compruebo si la fecha es correcta
         LocalDateTime ahora = LocalDateTime.now();
         if(ahora.isAfter(s.getExpirationDate())) {
-            // LANZO UNA EXCEPCION
+            throw new RuntimeException("La sesión ha expirado");
+        }
+
+        if (!s.getUsuario().getRol().equals(requiredRole)) {
+            throw new RuntimeException("Acceso denegado para este rol");
         }
 
         return true;

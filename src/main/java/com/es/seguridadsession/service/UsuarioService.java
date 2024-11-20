@@ -2,6 +2,7 @@ package com.es.seguridadsession.service;
 
 import com.es.seguridadsession.dto.UsuarioDTO;
 import com.es.seguridadsession.dto.UsuarioInsertDTO;
+import com.es.seguridadsession.exception.NotFoundException;
 import com.es.seguridadsession.model.Session;
 import com.es.seguridadsession.model.Usuario;
 import com.es.seguridadsession.repository.SessionRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,20 +23,35 @@ public class UsuarioService {
     @Autowired
     private SessionRepository sessionRepository;
 
+    public Usuario findByNombre(String nombre) {
+        return usuarioRepository.findByNombre(nombre)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+    }
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public Usuario saveUsuario(UsuarioInsertDTO usuarioDTO) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(usuarioDTO.getNombre());
+        usuario.setPassword(passwordEncoder.encode(usuarioDTO.getPassword()));
+        usuario.setRol(usuarioDTO.getRol());
+        return usuarioRepository.save(usuario);
+    }
+
+
     public String login(UsuarioDTO userLogin) {
 
         // Comprobar si user y pass son correctos -> obtener de la BDD el usuario
         String nombreUser = userLogin.getNombre();
         String passUser = userLogin.getPassword();
 
-        List<Usuario> users = usuarioRepository.findByNombre(nombreUser);
+        Usuario u = usuarioRepository.findByNombre(userLogin.getNombre())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Usuario u = users
-                .stream()
-                .filter(user -> user.getNombre().equals(nombreUser) && user.getPassword().equals(passUser))
-                .findFirst()
-                .orElseThrow(); // LANZAR EXCEPCION PROPIA
-
+        if (!passwordEncoder.matches(userLogin.getPassword(), u.getPassword())) {
+            throw new RuntimeException("Contraseña incorrecta");
+        }
         // Si coincide -> Insertar una sesión
         // Genero un TOKEN
         String token = UUID.randomUUID().toString(); // Esto genera un token aleatorio
@@ -49,7 +66,7 @@ public class UsuarioService {
 //                        LocalTime.now()
 //                ));
         s.setExpirationDate(
-                LocalDateTime.now().plusDays(1)
+                LocalDateTime.now().plusMinutes(1)
         );
 
         sessionRepository.save(s);
