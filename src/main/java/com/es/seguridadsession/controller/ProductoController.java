@@ -1,16 +1,13 @@
 package com.es.seguridadsession.controller;
 
 import com.es.seguridadsession.dto.ProductoDTO;
+import com.es.seguridadsession.exception.UnauthorizedException;
 import com.es.seguridadsession.service.ProductoService;
+import com.es.seguridadsession.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-/**
- * CLASE CONTROLLER DE PRODUCTOS
- * ESTOS RECURSOS ESTÁN PROTEGIDOS, Y SÓLO SE PUEDE ACCEDER AQUÍ SI EL USUARIO TIENE UNA SESSION ACTIVA
- */
 @RestController
 @RequestMapping("/productos")
 public class ProductoController {
@@ -18,35 +15,56 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
+    @Autowired
+    private SessionService sessionService;
 
     /**
-     * GET PRODUCTO POR SU ID
-     * A este método pueden acceder todo tipo de usuarios
-     * tanto los que tengan ROL USER como los que tengan ROL ADMIN
-     * @param id
-     * @return
+     * GET PRODUCTO POR SU ID.
+     * Endpoint accesible para usuarios con roles USER o ADMIN.
+     *
+     * @param id      ID del producto.
+     * @param token   Token de sesión del usuario.
+     * @return ProductoDTO con los datos del producto.
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProductoDTO> getById(
-            @PathVariable String id
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token
     ) {
-        // TODO
-        return null;
+        // Verificar la sesión
+        if (!sessionService.isValidSession(token)) {
+            throw new UnauthorizedException("Sesión no válida o expirada.");
+        }
+
+        // Obtener el producto
+        ProductoDTO producto = productoService.getById(id);
+        return ResponseEntity.ok(producto);
     }
 
     /**
-     * INSERTAR PRODUCTO
-     * A este método sólo pueden acceder los usuarios que tengan ROL ADMIN
-     * @param productoDTO
-     * @return
+     * INSERTAR PRODUCTO.
+     * Endpoint accesible solo para usuarios con rol ADMIN.
+     *
+     * @param productoDTO Datos del producto a insertar.
+     * @param token       Token de sesión del usuario.
+     * @return ProductoDTO con los datos del producto recién creado.
      */
     @PostMapping("/")
     public ResponseEntity<ProductoDTO> insert(
-            @RequestBody ProductoDTO productoDTO
+            @RequestBody ProductoDTO productoDTO,
+            @RequestHeader("Authorization") String token
     ) {
-        // TODO
-        return null;
+        // Verificar la sesión y rol de ADMIN
+        if (!sessionService.isValidSession(token)) {
+            throw new UnauthorizedException("Sesión no válida o expirada.");
+        }
+
+        if (!sessionService.hasRole(token, "ADMIN")) {
+            throw new UnauthorizedException("Permiso denegado. Solo los administradores pueden realizar esta acción.");
+        }
+
+        // Insertar el producto
+        ProductoDTO productoCreado = productoService.insert(productoDTO);
+        return ResponseEntity.status(201).body(productoCreado);
     }
-
-
 }

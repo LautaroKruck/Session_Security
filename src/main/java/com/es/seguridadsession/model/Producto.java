@@ -17,19 +17,19 @@ public class Producto {
     @Column(nullable = false)
     private int stock;
 
-
-    private boolean precio;
+    @Column(nullable = false)
+    private double precio;
 
     public Producto(){}
 
-    public Producto(Long id, String nombre, int stock, boolean precio) {
+    public Producto(Long id, String nombre, int stock, double precio) {
         this.id = id;
         this.nombre = nombre;
         this.stock = stock;
         this.precio = precio;
     }
 
-    public Producto(String nombre, int stock, boolean precio) {
+    public Producto(String nombre, int stock, double precio) {
         this.nombre = nombre;
         this.stock = stock;
         this.precio = precio;
@@ -59,11 +59,11 @@ public class Producto {
         this.stock = stock;
     }
 
-    public boolean isPrecio() {
+    public double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(boolean precio) {
+    public void setPrecio(double precio) {
         this.precio = precio;
     }
 }

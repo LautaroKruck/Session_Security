@@ -14,6 +14,14 @@ public class UsuarioInsertDTO {
         this.rol = rol;
     }
 
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
+
     public UsuarioInsertDTO(){}
 
     public String getNombre() {
@@ -39,13 +47,4 @@ public class UsuarioInsertDTO {
     public void setPassword2(String password2) {
         this.password2 = password2;
     }
-
-    public String getRol() {
-        return rol;
-    }
-
-    public void setRol(String rol) {
-        this.rol = rol;
-    }
-
 }

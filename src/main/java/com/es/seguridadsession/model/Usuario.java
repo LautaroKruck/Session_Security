@@ -34,6 +34,12 @@ public class Usuario {
     public Usuario() {
     }
 
+    public Usuario(String nombre, String password1, String rol) {
+        this.nombre = nombre;
+        this.password = password1;
+        this.rol = rol;
+    }
+
     public Long getId() {
         return id;
     }
